@@ -1,0 +1,10 @@
+{
+  "name": "makeit",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "decntralized socialmedia platform for events",
+  "license": "MIT",
+  "dependencies": {
+    "hardhat": "^2.19.1"
+  }
+}
