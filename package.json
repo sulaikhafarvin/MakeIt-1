@@ -5,6 +5,7 @@
   "description": "decntralized socialmedia platform for events",
   "license": "MIT",
   "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0",
     "hardhat": "^2.19.1"
   }
 }
