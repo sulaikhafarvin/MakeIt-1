@@ -1,0 +1,1 @@
+# MakeiT - The decntralized socialmedia platform for events
