@@ -13,12 +13,12 @@ const { writeFileSync } = require("fs");
 
 async function main(_mnemonic) {
   const entropy = mnemonicToEntropy(_mnemonic, wordlist);
-  const hdRootKey = HDKey.fromMasterSeed(entropy);
+   const hdRootKey = HDKey.fromMasterSeed(entropy);
   const privateKeyBuffer = Buffer.from(hdRootKey.deriveChild(0).privateKey);
   const publicKey = privateToPublic(privateKeyBuffer);
-  const address = keccak256(publicKey).slice(-20);
+  const  address = keccak256(publicKey).slice(-20);
 
-  console.log(`Account One Wallet Address: 0x${bytesToHex(address)}`);
+   console.log(`Account One Wallet Address: 0x${bytesToHex(address)}`);
 
 const accountOne = {
     privateKey: privateKeyBuffer,
@@ -27,10 +27,10 @@ const accountOne = {
   };
   const accountOneData = JSON.stringify(accountOne);
   writeFileSync("account 1.json", accountOneData);
-  console.log(`Account One Private Key: ${bytesToHex(privateKeyBuffer)}`);
+    console.log(`Account One Private Key: ${bytesToHex(privateKeyBuffer)}`);
 }
 main(process.argv[2])
-  .then(() => process.exit(0))
+   .then(() => process.exit(0))
   .catch((error) => {
     console.error(error);
     process.exit(1);
