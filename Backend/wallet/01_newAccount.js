@@ -5,6 +5,11 @@ const { privateToPublic, toChecksumAddress } = require("ethereumjs-util");  // U
 const { keccak256 } = require("ethereum-cryptography/keccak");
 const { bytesToHex } = require("ethereum-cryptography/utils");
 const { writeFileSync } = require("fs");
+
+//first create a seed-phase
+//2nd build a private key from HDRootket 
+//and create public from private
+// account address
   
   function _generateMnemonic() {
     const strength = 256; // 256 bits, 24 words; default is 128 bits, 12 words
@@ -48,8 +53,10 @@ const { writeFileSync } = require("fs");
   
     const accountOneIndex = 0;
     const accountOnePrivateKey = _generatePrivateKey(hdRootKey, accountOneIndex);
+    console.log(`Account One Private Key: ${bytesToHex(accountOnePrivateKey)}`);
   
     const accountOnePublicKey = _getPublicKey(accountOnePrivateKey);
+
   
     const accountOneAddress = _getEthAddress(accountOnePublicKey);
     console.log(`Account One Wallet Address: 0x${bytesToHex(accountOneAddress)}`);
