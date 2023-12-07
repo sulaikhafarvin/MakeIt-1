@@ -1,0 +1,103 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+struct Event {
+    address organizer;
+    string name;
+    string details;
+    uint256 reward;
+    bool listed;
+    uint256 availableSlots;
+    uint256 bookedSlots;
+    mapping(address => bool) slotsBooked;
+}
+
+contract MakeIT {
+    struct User {
+        string name;
+        string email;
+        uint256 tokenBalance;
+    }
+
+    mapping(address => User) public users;
+    mapping(uint256 => Event) public events;
+    mapping(uint256 => string) public contents;
+    uint256 public nextContentId = 1;
+    uint256 public nextUserId = 1;
+    uint256 public nextEventId = 1;
+    address public tokenAddress; // Address of the ERC-20 token
+
+    event TokenTransferred(address to, uint256 amount);
+    event EventCreated(uint256 eventId, string name, uint256 reward);
+    event EventListed(uint256 eventId, address organizer, string name, uint256 reward);
+    event SlotBooked(uint256 eventId, address user); // Moved inside the contract
+
+    constructor(address _tokenAddress) {
+        tokenAddress = _tokenAddress;
+    }
+
+    function createUser(string memory _name, string memory _email) external {
+        require(bytes(users[msg.sender].name).length == 0, "User already exists");
+        users[msg.sender] = User(_name, _email, 0);
+        nextUserId++;
+    }
+
+    function postContent(string memory _content) external {
+        contents[nextContentId] = _content;
+        nextContentId++;
+    }
+
+    function createEvent(string memory _name, string memory _details, uint256 _reward, uint256 _availableSlots) external {
+        Event storage newEvent = events[nextEventId];
+        newEvent.organizer = msg.sender;
+        newEvent.name = _name;
+        newEvent.details = _details;
+        newEvent.reward = _reward;
+        newEvent.availableSlots = _availableSlots;
+        newEvent.bookedSlots = 0;
+        emit EventCreated(nextEventId, _name, _reward);
+        nextEventId++;
+    }
+
+    function listEvent(uint256 eventId) external {
+        Event storage eventInfo = events[eventId];
+        require(!eventInfo.listed, "Event already listed");
+        require(eventInfo.organizer == msg.sender, "Only event organizer can list events");
+
+        // Mark the event as listed
+        eventInfo.listed = true;
+
+        emit EventListed(eventId, msg.sender, eventInfo.name, eventInfo.reward);
+
+        // Reward the user for listing the event
+        if (eventInfo.reward > 0) {
+            require(IERC20(tokenAddress).transfer(msg.sender, eventInfo.reward), "Token transfer failed");
+            emit TokenTransferred(msg.sender, eventInfo.reward);
+        }
+
+    }
+
+    function transferTokens(address to, uint256 amount) external {
+        require(IERC20(tokenAddress).transfer(to, amount), "Token transfer failed");
+        emit TokenTransferred(to, amount);
+    }
+
+    function bookSlot(uint256 eventId) external {
+        Event storage eventInfo = events[eventId];
+        require(eventInfo.availableSlots > 0, "No available slots");
+        require(!eventInfo.slotsBooked[msg.sender], "Slot already booked");
+
+        // Book the slot
+        eventInfo.slotsBooked[msg.sender] = true;
+        eventInfo.availableSlots--;
+        eventInfo.bookedSlots++;
+
+        // Reward the user for booking the slot
+        require(IERC20(tokenAddress).transfer(msg.sender, 1), "Token transfer failed");
+        users[msg.sender].tokenBalance += 1;
+
+        emit SlotBooked(eventId, msg.sender);
+    }
+}
